@@ -101,10 +101,10 @@
                         <br>
                         <form action="" method="post">
                         <br>
-                          <input type="text" placeholder="Username" name="username" value="{{
+                          <input type="text" required minlength="3" maxlength="50" placeholder="Username" name="username" value="{{
                             request.form.username }}">
                             <br>
-                           <input type="password" placeholder="Password" name="password" value="{{
+                           <input type="password" required minlength="8" maxlength="100" placeholder="Password" name="password" value="{{
                             request.form.password }}">
                             {% if errormessage %}
                           <p class="p-large"><strong>Error:</strong> {{ errormessage }}

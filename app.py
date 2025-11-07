@@ -35,8 +35,8 @@ CREATE TABLE users (
     password TEXT NOT NULL
 );
 """)
-    db.execute("INSERT INTO users VALUES(null,?, ?);", ("admin", generate_password_hash("password")))
-    db.execute("INSERT INTO users VALUES(null,?, ?);", ("bernardo", generate_password_hash("omgMPC")))
+    db.execute("INSERT INTO users VALUES(null,?, ?);", ("admin", "pbkdf2:sha256:150000$siQ6si2q$eb30acb6b5751a022ad0101c85eda833dca9f8776e191ca28b6286abc0a08495"))
+    db.execute("INSERT INTO users VALUES(null,?, ?);", ("bernardo", "pbkdf2:sha256:150000$xbRn40ZJ$e755f49aec660af12a59ab41703f747165522328716146d8991ac7addbd1aeae"))
     db.execute("INSERT INTO notes VALUES(null,2,'1993-09-23 10:10:10','hello my friend',1234567890);")
     db.execute("INSERT INTO notes VALUES(null,2,'1993-09-23 12:10:10','i want lunch pls',1234567891);")
     conn.commit()
@@ -72,7 +72,7 @@ def notes():
     #Posting a new note:
     if request.method == 'POST':
         if request.form['submit_button'] == 'add note':
-            note = request.form['noteinput']
+            note = request.form['noteinput'].strip()
             db = connect_db()
             c = db.cursor()
             statement = "INSERT INTO notes(id,assocUser,dateWritten,note,publicID) VALUES(null,?,?,?,?);"
@@ -143,23 +143,38 @@ def register():
     errormessage = ""
     if request.method == 'POST':
         
-
-        username = request.form['username']
+        username = request.form['username'].strip()
         password = request.form['password']
 
-        hashed_password = generate_password_hash(password)
-
-        db = connect_db()
-        c = db.cursor()
-
-        user_statement = "SELECT * FROM users WHERE username = ?;"
-        user_fields = (username,)
-        c.execute(user_statement, user_fields)
-        if(c.fetchone() is not None):
+        if not username or not password:
             errored = True
-            errormessage = "That username is already in use by someone else!"
+            errormessage = "Username and Password are required fields."
+        elif len(username) < 3:
+            errored = True
+            errormessage = "Username must be at least 3 characters long."
+        elif len(username) > 50:
+            errored = True
+            errormessage = "Username too long."
+        elif len(password) < 8:
+            errored = True
+            errormessage = "Password must be at least 8 characters long."
+        elif len(password) > 100:
+            errored = True
+            errormessage = "Password too long."
 
         if(not errored):
+            hashed_password = generate_password_hash(password)
+
+            db = connect_db()
+            c = db.cursor()
+
+            user_statement = "SELECT * FROM users WHERE username = ?;"
+            user_fields = (username,)
+            c.execute(user_statement, user_fields)
+            if(c.fetchone() is not None):
+                errored = True
+                errormessage = "That username is already in use by someone else!"
+
             statement = "INSERT INTO users(id,username,password) VALUES(null,?,?);"
             fields = (username,hashed_password)
             print(statement)
@@ -176,8 +191,6 @@ def register():
                         </html>
                         """
         
-        db.commit()
-        db.close()
     return render_template('register.html',errormessage=errormessage)
 
 
