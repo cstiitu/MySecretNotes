@@ -2,6 +2,9 @@ import json, sqlite3, click, functools, os, hashlib,time, random, sys
 from flask import Flask, current_app, g, session, redirect, render_template, url_for, request
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf.csrf import CSRFProtect
+from flask import Flask
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 
 
@@ -50,6 +53,13 @@ app = Flask(__name__)
 csrf = CSRFProtect(app)
 app.database = "db.sqlite3"
 app.secret_key = os.urandom(32)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["30 per minute", "1 per second"],
+    storage_uri="memory://",
+    strategy="fixed-window", # or "moving-window", or "sliding-window-counter"
+)
 
 ### ADMINISTRATOR'S PANEL ###
 def login_required(view):
