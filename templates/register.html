@@ -111,6 +111,7 @@
                         {% endif %}
                             <br></br>
                           <input class="btn-solid-lg" type="submit" value="Sign up">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         </form>
                         
                       </div>

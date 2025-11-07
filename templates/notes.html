@@ -281,6 +281,7 @@ ol, ul, dl {
               <textarea name="noteinput" placeholder=">Enter text here..." class="textfield form-control" value={{ request.form.noteinput }}></textarea><br>
             </div>
             <input class="btn-solid-lg notes__input-margin-top" type="submit" name="submit_button" value="add note">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         </form> 
         {% if noteerror %}
               <p class="p-large"><strong>Error:</strong> {{ noteerror }}
@@ -292,6 +293,7 @@ ol, ul, dl {
               <input class="form-control notes__input__no-margin" type="text" placeholder="XXXXXXXXXX" name="noteid" value={{request.form.noteid}}>
             </div>
             <input class="btn-solid-lg notes__input-margin-top" type="submit" name="submit_button" value="import note">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         </form> 
         {% if importerror %}
               <p class="p-large"><strong>Error:</strong> {{ importerror }}

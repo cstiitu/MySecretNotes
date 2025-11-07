@@ -19,6 +19,7 @@
       <form action="/delete" method="post">
         <input hidden="true" value="{{note[0]}}" name="noteid">
         <button type="submit" href="#" class="card-link card-delete-button btn-outline-sm">Delete</button>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       </form>
     </div>
   </li>

@@ -1,6 +1,7 @@
 import json, sqlite3, click, functools, os, hashlib,time, random, sys
 from flask import Flask, current_app, g, session, redirect, render_template, url_for, request
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_wtf.csrf import CSRFProtect
 
 
 
@@ -46,6 +47,7 @@ CREATE TABLE users (
 
 ### APPLICATION SETUP ###
 app = Flask(__name__)
+csrf = CSRFProtect(app)
 app.database = "db.sqlite3"
 app.secret_key = os.urandom(32)
 
