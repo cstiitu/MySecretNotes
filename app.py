@@ -8,7 +8,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 ### DATABASE FUNCTIONS ###
 
 def connect_db():
-    return sqlite3.connect(app.database)
+    conn = sqlite3.connect(app.database)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 def init_db():
     """Initializes the database with our great SQL schema"""
@@ -86,11 +88,10 @@ def notes():
             statement = "SELECT * from NOTES where publicID = ?"
             fields = (noteid,)
             c.execute(statement, fields)
-            result = c.fetchall()
-            if(len(result)>0):
-                row = result[0]
+            result = c.fetchone()
+            if(result is not None):
                 statement = "INSERT INTO notes(id,assocUser,dateWritten,note,publicID) VALUES(null,?,?,?,?);"
-                fields = (session['userid'],row[2],row[3],row[4])
+                fields = (session['userid'],result['dateWritten'],result['note'],result['publicID'])
                 c.execute(statement, fields)
             else:
                 importerror="No such note with that ID!"
@@ -120,14 +121,14 @@ def login():
         statement = "SELECT * FROM users WHERE username = ?;"
         fields = (username,)
         c.execute(statement, fields)
-        result = c.fetchall()
+        result = c.fetchone()
 
-        if len(result) > 0:
-            if check_password_hash(stored_hash, password):
+        if (result is not None):
+            if check_password_hash(result['password'], password):
                 session.clear()
                 session['logged_in'] = True
-                session['userid'] = result[0][0]
-                session['username']=result[0][1]
+                session['userid'] = result['id']
+                session['username'] = result['username']
                 return redirect(url_for('index'))
             else:
                 error = "Wrong username or password!"
@@ -154,7 +155,7 @@ def register():
         user_statement = "SELECT * FROM users WHERE username = ?;"
         user_fields = (username,)
         c.execute(user_statement, user_fields)
-        if(len(c.fetchall())>0):
+        if(c.fetchone() is not None):
             errored = True
             errormessage = "That username is already in use by someone else!"
 
