@@ -100,17 +100,14 @@
                         
                         <br>
                         <form action="" method="post">
-                          {% if usererror %}
-                          <p class="p-large"><strong>Error:</strong> {{ usererror }}
-                        {% endif %}
                         <br>
                           <input type="text" placeholder="Username" name="username" value="{{
                             request.form.username }}">
                             <br>
                            <input type="password" placeholder="Password" name="password" value="{{
                             request.form.password }}">
-                            {% if passworderror %}
-                          <p class="p-large"><strong>Error:</strong> {{ passworderror }}
+                            {% if errormessage %}
+                          <p class="p-large"><strong>Error:</strong> {{ errormessage }}
                         {% endif %}
                             <br></br>
                           <input class="btn-solid-lg" type="submit" value="Sign up">
