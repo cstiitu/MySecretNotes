@@ -69,19 +69,30 @@ def index():
 @app.route("/notes/", methods=('GET', 'POST'))
 @login_required
 def notes():
+    errored = False
+    noteerror=""
     importerror=""
     #Posting a new note:
     if request.method == 'POST':
         if request.form['submit_button'] == 'add note':
             note = request.form['noteinput'].strip()
-            db = connect_db()
-            c = db.cursor()
-            statement = "INSERT INTO notes(id,assocUser,dateWritten,note) VALUES(null,?,?,?);"
-            fields = (session['userid'],time.strftime('%Y-%m-%d %H:%M:%S'),note)
-            print(statement)
-            c.execute(statement, fields)
-            db.commit()
-            db.close()
+            if not note:
+                errored = True
+                noteerror = "Empty note."
+            elif len(note) > 1000:
+                errored = True
+                noteerror = "Note too long."
+            
+            if not errored:
+                db = connect_db()
+                c = db.cursor()
+                statement = "INSERT INTO notes(id,assocUser,dateWritten,note) VALUES(null,?,?,?);"
+                fields = (session['userid'],time.strftime('%Y-%m-%d %H:%M:%S'),note)
+                print(statement)
+                c.execute(statement, fields)
+                db.commit()
+                db.close()
+
         elif request.form['submit_button'] == 'import note':
             noteid = request.form['noteid']
             db = connect_db()
@@ -108,7 +119,7 @@ def notes():
     notes = c.fetchall()
     print(notes)
     
-    return render_template('notes.html',notes=notes,importerror=importerror)
+    return render_template('notes.html',notes=notes,importerror=importerror,noteerror=noteerror)
 
 @app.route("/delete/", methods=["POST"])
 def deleteNote():
