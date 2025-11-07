@@ -110,6 +110,20 @@ def notes():
     
     return render_template('notes.html',notes=notes,importerror=importerror)
 
+@app.route("/delete/", methods=["POST"])
+def deleteNote():
+    if request.method == 'POST':
+        noteid = request.form['noteid']
+        db = connect_db()
+        c = db.cursor()
+        statement = "DELETE FROM notes WHERE id = ?;"
+        fields = (noteid,)
+        c.execute(statement, fields)
+        db.commit()
+        db.close()
+    return redirect(url_for('notes'))
+
+
 
 @app.route("/login/", methods=('GET', 'POST'))
 def login():

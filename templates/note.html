@@ -16,6 +16,9 @@
       <h5 class="card-title notes__card-title">Note ID: {{note[0]}}</h5>
       <h6 class="card-subtitle mb-2 notes__card-subtitle">note written on: <span class="notes__card-subtitle--date ">{{ note[2] }}</span></h6>
       <p class="card-text">{{ note[3] }}</p>
-      <button href="#" class="card-link card-delete-button btn-outline-sm">Delete</button>
+      <form action="/delete" method="post">
+        <input hidden="true" value="{{note[0]}}" name="noteid">
+        <button type="submit" href="#" class="card-link card-delete-button btn-outline-sm">Delete</button>
+      </form>
     </div>
   </li>
