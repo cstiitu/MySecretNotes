@@ -25,8 +25,7 @@ CREATE TABLE notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     assocUser INTEGER NOT NULL,
     dateWritten DATETIME NOT NULL,
-    note TEXT NOT NULL,
-    publicID INTEGER NOT NULL
+    note TEXT NOT NULL
 );
 
 CREATE TABLE users (
@@ -37,8 +36,10 @@ CREATE TABLE users (
 """)
     db.execute("INSERT INTO users VALUES(null,?, ?);", ("admin", "pbkdf2:sha256:150000$siQ6si2q$eb30acb6b5751a022ad0101c85eda833dca9f8776e191ca28b6286abc0a08495"))
     db.execute("INSERT INTO users VALUES(null,?, ?);", ("bernardo", "pbkdf2:sha256:150000$xbRn40ZJ$e755f49aec660af12a59ab41703f747165522328716146d8991ac7addbd1aeae"))
-    db.execute("INSERT INTO notes VALUES(null,2,'1993-09-23 10:10:10','hello my friend',1234567890);")
-    db.execute("INSERT INTO notes VALUES(null,2,'1993-09-23 12:10:10','i want lunch pls',1234567891);")
+    db.execute("INSERT INTO users VALUES(null,?, ?);", ("hans_bjarne", "pbkdf2:sha256:150000$xhTcwDIz$1daa3d226916c2740add892e66f20728a093534ba9da380ba7adb551a4a0c288"))
+    db.execute("INSERT INTO notes VALUES(null,2,'1993-09-23 10:10:10','hello my friend');")
+    db.execute("INSERT INTO notes VALUES(null,2,'1993-09-23 12:10:10','i want lunch pls');")
+    db.execute("INSERT INTO notes VALUES(null,3,'2011-11-11 11:11:11','Very private note to self: How to get into SSH: ssh -J pensim@130.226.143.130 hans_bjarne@10.0.1.47 password: mygoodpassword');")
     conn.commit()
 
 
@@ -75,8 +76,8 @@ def notes():
             note = request.form['noteinput'].strip()
             db = connect_db()
             c = db.cursor()
-            statement = "INSERT INTO notes(id,assocUser,dateWritten,note,publicID) VALUES(null,?,?,?,?);"
-            fields = (session['userid'],time.strftime('%Y-%m-%d %H:%M:%S'),note,random.randrange(1000000000, 9999999999))
+            statement = "INSERT INTO notes(id,assocUser,dateWritten,note) VALUES(null,?,?,?);"
+            fields = (session['userid'],time.strftime('%Y-%m-%d %H:%M:%S'),note)
             print(statement)
             c.execute(statement, fields)
             db.commit()
@@ -85,13 +86,13 @@ def notes():
             noteid = request.form['noteid']
             db = connect_db()
             c = db.cursor()
-            statement = "SELECT * from NOTES where publicID = ?"
+            statement = "SELECT * from NOTES where id = ?"
             fields = (noteid,)
             c.execute(statement, fields)
             result = c.fetchone()
             if(result is not None):
-                statement = "INSERT INTO notes(id,assocUser,dateWritten,note,publicID) VALUES(null,?,?,?,?);"
-                fields = (session['userid'],result['dateWritten'],result['note'],result['publicID'])
+                statement = "INSERT INTO notes(id,assocUser,dateWritten,note) VALUES(null,?,?,?);"
+                fields = (session['userid'],result['dateWritten'],result['note'])
                 c.execute(statement, fields)
             else:
                 importerror="No such note with that ID!"
