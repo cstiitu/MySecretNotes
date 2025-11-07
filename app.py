@@ -1,5 +1,6 @@
 import json, sqlite3, click, functools, os, hashlib,time, random, sys
 from flask import Flask, current_app, g, session, redirect, render_template, url_for, request
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 
@@ -31,13 +32,12 @@ CREATE TABLE users (
     username TEXT NOT NULL,
     password TEXT NOT NULL
 );
-
-INSERT INTO users VALUES(null,"admin", "password");
-INSERT INTO users VALUES(null,"bernardo", "omgMPC");
-INSERT INTO notes VALUES(null,2,"1993-09-23 10:10:10","hello my friend",1234567890);
-INSERT INTO notes VALUES(null,2,"1993-09-23 12:10:10","i want lunch pls",1234567891);
-
 """)
+    db.execute("INSERT INTO users VALUES(null,?, ?);", ("admin", generate_password_hash("password")))
+    db.execute("INSERT INTO users VALUES(null,?, ?);", ("bernardo", generate_password_hash("omgMPC")))
+    db.execute("INSERT INTO notes VALUES(null,2,'1993-09-23 10:10:10','hello my friend',1234567890);")
+    db.execute("INSERT INTO notes VALUES(null,2,'1993-09-23 12:10:10','i want lunch pls',1234567891);")
+    conn.commit()
 
 
 
@@ -117,17 +117,20 @@ def login():
         password = request.form['password']
         db = connect_db()
         c = db.cursor()
-        statement = "SELECT * FROM users WHERE username = ? AND password = ?;"
-        fields = (username, password)
+        statement = "SELECT * FROM users WHERE username = ?;"
+        fields = (username,)
         c.execute(statement, fields)
         result = c.fetchall()
 
         if len(result) > 0:
-            session.clear()
-            session['logged_in'] = True
-            session['userid'] = result[0][0]
-            session['username']=result[0][1]
-            return redirect(url_for('index'))
+            if check_password_hash(stored_hash, password):
+                session.clear()
+                session['logged_in'] = True
+                session['userid'] = result[0][0]
+                session['username']=result[0][1]
+                return redirect(url_for('index'))
+            else:
+                error = "Wrong username or password!"
         else:
             error = "Wrong username or password!"
     return render_template('login.html',error=error)
@@ -142,6 +145,9 @@ def register():
 
         username = request.form['username']
         password = request.form['password']
+
+        hashed_password = generate_password_hash(password)
+
         db = connect_db()
         c = db.cursor()
 
@@ -154,7 +160,7 @@ def register():
 
         if(not errored):
             statement = "INSERT INTO users(id,username,password) VALUES(null,?,?);"
-            fields = (username,password)
+            fields = (username,hashed_password)
             print(statement)
             c.execute(statement, fields)
             db.commit()
